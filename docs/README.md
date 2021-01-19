@@ -2,9 +2,9 @@ Pan-Cancer Integrative Histology-Genomic Analysis via Interpretable Multimodal D
 ===========
 
 
-ArXiv | [http://pancancer.ai](http://pancancer.mahmoodlab.org/)
+ArXiv | [http://pancancer.mahmoodlab.org](http://pancancer.mahmoodlab.org/)
 
-tl;dr - We present an interpretable, weakly-supervised, multimodal deep learning algorithm that integrates whole slide images (WSIs) and molecular profile features for cancer prognosis. We validate our method on 14 cancer types in the TCGA, and extract both local and global patterns of morphological and molecular feature importances in each cancer type. Using the multimodal interpretability aspect of our model, we developed PORPOISE, an interactive, freely-available platform that directly yields prognostic markers made made by our model for thousands of patients across in our study. To validate that these model explanations are prognostic, we analyzed high attention morphological regions in WSIs, from which we discovered that tumor-infiltrating lymphocyte presence corroborates with favorable cancer prognosis on 9 out of 14 cancer types.
+tl;dr - We present an interpretable, weakly-supervised, multimodal deep learning algorithm that integrates whole slide images (WSIs) and molecular profile features for cancer prognosis. We validate our method on 14 cancer types in the TCGA, and extract both local and global patterns of morphological and molecular feature importances in each cancer type. Using the multimodal interpretability aspect of our model, we developed [PORPOISE](http://pancancer.mahmoodlab.org/), an interactive, freely-available platform that directly yields prognostic markers made made by our model for thousands of patients across in our study. To validate that these model explanations are prognostic, we analyzed high attention morphological regions in WSIs, from which we discovered that tumor-infiltrating lymphocyte presence corroborates with favorable cancer prognosis on 9 out of 14 cancer types.
 
 <img src="model.jpg" width="2000px" align="center" />
 
@@ -41,14 +41,14 @@ Processed molecular profile features containing mutation status, copy number var
 
 
 #### 4. Training-Validation Splits
-For evaluating the algorithm's performance, we randomly partitioned each dataset using 5-fold cross-validation. Splits for each cancer type are found in the [splits/5foldcv](https://github.com/Richarizardd/PORPOISE/tree/master/splits/5foldcv) folder, which each contain **splits_{k}.csv** for k = 1 to 5. In each **splits_{k}.csv**, the first column corresponds to the TCGA Case IDs used for training, and the second column corresponds to the TCGA Case IDs used for validation. Alternatively, one could define their own splits, however, the files would need to be defined in this format. The dataset loader for using these train-val splits are defined in the (**get_split_from_df**)[https://github.com/Richarizardd/PORPOISE/blob/5200386244d0059eeed6f35101e874416ed15dac/datasets/dataset_survival.py#L244] function in the (**Generic_WSI_Survival_Dataset**)[Generic_WSI_Survival_Dataset] class (inherited from the PyTorch Dataset class).
+For evaluating the algorithm's performance, we randomly partitioned each dataset using 5-fold cross-validation. Splits for each cancer type are found in the [splits/5foldcv](https://github.com/Richarizardd/PORPOISE/tree/master/splits/5foldcv) folder, which each contain **splits_{k}.csv** for k = 1 to 5. In each **splits_{k}.csv**, the first column corresponds to the TCGA Case IDs used for training, and the second column corresponds to the TCGA Case IDs used for validation. Alternatively, one could define their own splits, however, the files would need to be defined in this format. The dataset loader for using these train-val splits are defined in the [**get_split_from_df**](https://github.com/mahmoodlab/PORPOISE/blob/6ff1259d020661f6635d0ce21af898a16f94364c/datasets/dataset_survival.py#L244) function in the [**Generic_WSI_Survival_Dataset**](class Generic_WSI_Survival_Dataset(Dataset):) class (inherited from the PyTorch Dataset class).
 
 #### 5. Running Experiments
 To run experiments using the SNN, AMIL, and MMF networks defined in this repository, experiments can be run using the following generic command-line:
 ```shell
 CUDA_VISIBLE_DEVICES=<DEVICE ID> python main.py --which_splits <SPLIT FOLDER PATH> --split_dir <SPLITS FOR CANCER TYPE> --mode <WHICH MODALITY> --model_type <WHICH MODEL>
 ```
-Commands for all experiments / models can be found in the (Commands.md)[https://github.com/Richarizardd/PORPOISE/blob/master/docs/Commands.md] file.
+Commands for all experiments / models can be found in the [Commands.md](https://github.com/mahmoodlab/PORPOISE/blob/master/docs/Commands.md) file.
 
 To run experiments on custom datasets, one would need to modify the **args.task** argument in **main.py** that catches all the 14 cancer type datasets in our study. Included below is an example of how survival analysis for Head and Heck Squamous Cell Carcinoma (TCGA-HNSC) is executed. **csv_path** is the path to the CSV file containing clinical and molecular profile information. **data_dir** is the patch to the folder of .pt features for your WSIs.
 
