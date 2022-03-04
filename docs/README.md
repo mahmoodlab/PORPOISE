@@ -67,3 +67,17 @@ if args.task == 'tcga_hnsc_survival':
                                            label_col = 'survival_months',
                                            ignore=[])
 ```
+
+## License & Usage 
+This work is still under review. Still, if you find our work useful in your research, please consider citing our paper at:
+```bash
+@article{chen2021pan,
+  title={Pan-cancer integrative histology-genomic analysis via interpretable multimodal deep learning},
+  author={Chen, Richard J and Lu, Ming Y and Williamson, Drew FK and Chen, Tiffany Y and Lipkova, Jana and Shaban, Muhammad and Shady, Maha and Williams, Mane and Joo, Bumjin and Noor, Zahra and others},
+  journal={arXiv preprint arXiv:2108.02278},
+  year={2021}
+}
+```
+
+© [Mahmood Lab](http://www.mahmoodlab.org) - This code is made available under the GPLv3 License and is available for non-commercial academic purposes. 
+
