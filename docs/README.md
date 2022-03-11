@@ -4,6 +4,8 @@ Pan-Cancer Integrative Histology-Genomic Analysis via Interpretable Multimodal D
 
 ArXiv | [http://pancancer.mahmoodlab.org](http://pancancer.mahmoodlab.org/)
 
+*This study is currently under a press embargo, please address all questions to fmahmood@fas.harvard.edu*
+
 *TL;DR - We present an interpretable, weakly-supervised, multimodal deep learning algorithm that integrates whole slide images (WSIs) and molecular profile features for cancer prognosis. We validate our method on 14 cancer types, and extract both local and global patterns of morphological and molecular feature importances in each cancer type. Using the multimodal interpretability aspect of our model, we developed [PORPOISE](http://pancancer.mahmoodlab.org/), an interactive, freely-available platform that directly yields prognostic markers determined by our model for thousands of patients across multiple cancer types. To validate that these model explanations are prognostic, we analyzed high attention morphological regions in WSIs, which indicates that tumor-infiltrating lymphocyte presence corroborates with favorable cancer prognosis on 9 out of 14 cancer types.*
 
 <img src="model.png" width="1500px" align="center" />
