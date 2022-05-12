@@ -1,8 +1,9 @@
-Pan-Cancer Integrative Histology-Genomic Analysis via Interpretable Multimodal Deep Learning <img src="logo.png" width="100px" align="right" />
+PORPOISE <img src="logo.png" width="150px" align="right" />
 ===========
+### Pan-Cancer Integrative Histology-Genomic Analysis via Multimodal Deep Learning
+*Cancer Cell*
 
-
-ArXiv | [http://pancancer.mahmoodlab.org](http://pancancer.mahmoodlab.org/)
+Read Link | Journal Link | [Interactive Demo](http://pancancer.mahmoodlab.org/)
 
 *This study is currently under a press embargo, please address all questions to fmahmood@fas.harvard.edu*
 
@@ -74,10 +75,10 @@ if args.task == 'tcga_hnsc_survival':
 This work is still under review. Still, if you find our work useful in your research, please consider citing our paper at:
 ```bash
 @article{chen2021pan,
-  title={Pan-cancer integrative histology-genomic analysis via interpretable multimodal deep learning},
+  title={Pan-cancer integrative histology-genomic analysis via multimodal deep learning},
   author={Chen, Richard J and Lu, Ming Y and Williamson, Drew FK and Chen, Tiffany Y and Lipkova, Jana and Shaban, Muhammad and Shady, Maha and Williams, Mane and Joo, Bumjin and Noor, Zahra and others},
-  journal={arXiv preprint arXiv:2108.02278},
-  year={2021}
+  journal={Cancer Cell},
+  year={2022}
 }
 ```
 
