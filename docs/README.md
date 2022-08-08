@@ -1,7 +1,7 @@
 PORPOISE <img src="logo.png" width="75px" align="right" />
 ===========
 ### Pan-Cancer Integrative Histology-Genomic Analysis via Multimodal Deep Learning
-*Cancer Cell* <img src="ccell.jpg" width="75px" align="right" /> 
+*Cancer Cell* <img src="ccell.jpg" width="200px" align="right" /> 
 
 [Journal Link](https://www.cell.com/cancer-cell/fulltext/S1535-6108(22)00317-8) | [Interactive Demo](http://pancancer.mahmoodlab.org/)
 
