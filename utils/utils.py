@@ -15,6 +15,11 @@ import torch.nn.functional as F
 import math
 from itertools import islice
 import collections
+
+from torch.utils.data.dataloader import default_collate
+import torch_geometric
+from torch_geometric.data import Batch
+
 device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class SubsetSequentialSampler(Sampler):
@@ -46,26 +51,48 @@ def collate_MIL_survival(batch):
     img = torch.cat([item[0] for item in batch], dim = 0)
     omic = torch.cat([item[1] for item in batch], dim = 0).type(torch.FloatTensor)
     label = torch.LongTensor([item[2] for item in batch])
-    event_time = np.array([item[3] for item in batch])
+    event_time = torch.FloatTensor([item[3] for item in batch])
     c = torch.FloatTensor([item[4] for item in batch])
     return [img, omic, label, event_time, c]
 
+def collate_MIL_survival_cluster(batch):
+    img = torch.cat([item[0] for item in batch], dim = 0)
+    cluster_ids = torch.cat([item[1] for item in batch], dim = 0).type(torch.LongTensor)
+    omic = torch.cat([item[2] for item in batch], dim = 0).type(torch.FloatTensor)
+    label = torch.LongTensor([item[3] for item in batch])
+    event_time = np.array([item[4] for item in batch])
+    c = torch.FloatTensor([item[5] for item in batch])
+    return [img, cluster_ids, omic, label, event_time, c]
+
+def collate_MIL_survival_sig(batch):
+    img = torch.cat([item[0] for item in batch], dim = 0)
+    omic1 = torch.cat([item[1] for item in batch], dim = 0).type(torch.FloatTensor)
+    omic2 = torch.cat([item[2] for item in batch], dim = 0).type(torch.FloatTensor)
+    omic3 = torch.cat([item[3] for item in batch], dim = 0).type(torch.FloatTensor)
+    omic4 = torch.cat([item[4] for item in batch], dim = 0).type(torch.FloatTensor)
+    omic5 = torch.cat([item[5] for item in batch], dim = 0).type(torch.FloatTensor)
+    omic6 = torch.cat([item[6] for item in batch], dim = 0).type(torch.FloatTensor)
+
+    label = torch.LongTensor([item[7] for item in batch])
+    event_time = np.array([item[8] for item in batch])
+    c = torch.FloatTensor([item[9] for item in batch])
+    return [img, omic1, omic2, omic3, omic4, omic5, omic6, label, event_time, c]
 
 def get_simple_loader(dataset, batch_size=1):
     kwargs = {'num_workers': 4} if device.type == "cuda" else {}
     loader = DataLoader(dataset, batch_size=batch_size, sampler = sampler.SequentialSampler(dataset), collate_fn = collate_MIL, **kwargs)
     return loader 
 
-def get_split_loader(split_dataset, training = False, testing = False, weighted = False, task_type='classification', batch_size=1):
+def get_split_loader(split_dataset, training = False, testing = False, weighted = False, mode='coattn', batch_size=1):
     """
         return either the validation loader or training loader 
     """
-    if task_type == 'classification':
-        collate = collate_MIL
-    elif task_type == 'survival':
-        collate = collate_MIL_survival
+    if mode == 'coattn':
+        collate = collate_MIL_survival_sig
+    elif mode == 'cluster':
+        collate = collate_MIL_survival_cluster
     else:
-        raise NotImplementedError
+        collate = collate_MIL_survival
 
     kwargs = {'num_workers': 4} if device.type == "cuda" else {}
     if not testing:
@@ -76,7 +103,7 @@ def get_split_loader(split_dataset, training = False, testing = False, weighted 
             else:
                 loader = DataLoader(split_dataset, batch_size=batch_size, sampler = RandomSampler(split_dataset), collate_fn = collate, **kwargs)
         else:
-            loader = DataLoader(split_dataset, batch_size=batch_size, sampler = SequentialSampler(split_dataset), collate_fn = collate, **kwargs)
+            loader = DataLoader(split_dataset, batch_size=1, sampler = SequentialSampler(split_dataset), collate_fn = collate, **kwargs)
     
     else:
         ids = np.random.choice(np.arange(len(split_dataset), int(len(split_dataset)*0.1)), replace = False)
@@ -271,6 +298,18 @@ def ce_loss(hazards, S, Y, c, alpha=0.4, eps=1e-7):
     loss = loss.mean()
     return loss
 
+# def nll_loss(hazards, Y, c, S=None, alpha=0.4, eps=1e-8):
+#   batch_size = len(Y)
+#   Y = Y.view(batch_size, 1) # ground truth bin, 1,2,...,k
+#   c = c.view(batch_size, 1).float() #censorship status, 0 or 1
+#   if S is None:
+#       S = 1 - torch.cumsum(hazards, dim=1) # surival is cumulative product of 1 - hazards
+#   uncensored_loss = -(1 - c) * (torch.log(torch.gather(hazards, 1, Y).clamp(min=eps)))
+#   censored_loss = - c * torch.log(torch.gather(S, 1, Y).clamp(min=eps))
+#   loss = censored_loss + uncensored_loss
+#   loss = loss.mean()
+#   return loss
+
 class CrossEntropySurvLoss(object):
     def __init__(self, alpha=0.15):
         self.alpha = alpha
@@ -281,7 +320,8 @@ class CrossEntropySurvLoss(object):
         else:
             return ce_loss(hazards, S, Y, c, alpha=alpha)
 
-class NLLSurvLoss(object):
+# loss_fn(hazards=hazards, S=S, Y=Y_hat, c=c, alpha=0)
+class NLLSurvLoss_dep(object):
     def __init__(self, alpha=0.15):
         self.alpha = alpha
 
@@ -290,6 +330,9 @@ class NLLSurvLoss(object):
             return nll_loss(hazards, S, Y, c, alpha=self.alpha)
         else:
             return nll_loss(hazards, S, Y, c, alpha=alpha)
+    # h_padded = torch.cat([torch.zeros_like(c), hazards], 1)
+    #reg = - (1 - c) * (torch.log(torch.gather(hazards, 1, Y)) + torch.gather(torch.cumsum(torch.log(1-h_padded), dim=1), 1, Y))
+
 
 class CoxSurvLoss(object):
     def __call__(hazards, S, c, **kwargs):
@@ -324,3 +367,90 @@ def l1_reg_modules(model, reg_type=None):
     l1_reg += l1_reg_all(model.mm)
 
     return l1_reg
+
+def l1_reg_omic(model, reg_type=None):
+    l1_reg = 0
+
+    if hasattr(model, 'fc_omic'):
+        l1_reg += l1_reg_all(model.fc_omic)
+    else:
+        l1_reg += l1_reg_all(model)
+
+    return l1_reg
+
+def get_custom_exp_code(args):
+    r"""
+    Updates the argparse.NameSpace with a custom experiment code.
+
+    Args:
+        - args (NameSpace)
+
+    Returns:
+        - args (NameSpace)
+    """
+    exp_code = '_'.join(args.split_dir.split('_')[:2])
+    dataset_path = 'datasets_csv'
+    param_code = ''
+
+    ### Model Type
+    if args.model_type == 'porpoise_mmf':
+      param_code += 'PorpoiseMMF'
+    elif args.model_type == 'porpoise_amil':
+      param_code += 'PorpoiseAMIL'
+    elif args.model_type == 'max_net' or args.model_type == 'snn':
+      param_code += 'SNN'
+    elif args.model_type == 'amil':
+      param_code += 'AMIL'
+    elif args.model_type == 'deepset':
+      param_code += 'DS'
+    elif args.model_type == 'mi_fcn':
+      param_code += 'MIFCN'
+    elif args.model_type == 'mcat':
+      param_code += 'MCAT'
+    else:
+      raise NotImplementedError
+
+    ### Loss Function
+    param_code += '_%s' % args.bag_loss
+    if args.bag_loss in ['nll_surv']:
+        param_code += '_a%s' % str(args.alpha_surv)
+
+    ### Learning Rate
+    if args.lr != 2e-4:
+      param_code += '_lr%s' % format(args.lr, '.0e')
+
+    ### L1-Regularization
+    if args.reg_type != 'None':
+      param_code += '_%sreg%s' % (args.reg_type, format(args.lambda_reg, '.0e'))
+
+    if args.dropinput:
+      param_code += '_drop%s' % str(int(args.dropinput*100))
+
+    param_code += '_%s' % args.which_splits.split("_")[0]
+
+    ### Batch Size
+    if args.batch_size != 1:
+      param_code += '_b%s' % str(args.batch_size)
+
+    ### Gradient Accumulation
+    if args.gc != 1:
+      param_code += '_gc%s' % str(args.gc)
+
+    ### Applying Which Features
+    if args.apply_sigfeats:
+      param_code += '_sig'
+      dataset_path += '_sig'
+    elif args.apply_mutsig:
+      param_code += '_mutsig'
+      dataset_path += '_mutsig'
+
+    ### Fusion Operation
+    if args.fusion != "None":
+      param_code += '_' + args.fusion
+
+    ### Updating
+    args.exp_code = exp_code + "_" + param_code
+    args.param_code = param_code
+    args.dataset_path = dataset_path
+
+    return args
