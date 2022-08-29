@@ -70,7 +70,7 @@ if args.task == 'tcga_hnsc_survival':
 ```
 
 ## License & Usage 
-This work is still under review. Still, if you find our work useful in your research, please consider citing our paper at:
+If you find our work useful in your research, please consider citing our paper at:
 ```bash
 @article{chen2021pan,
   title={Pan-cancer integrative histology-genomic analysis via multimodal deep learning},
